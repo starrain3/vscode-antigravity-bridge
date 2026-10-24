@@ -58,6 +58,9 @@
 
    # 狀態推播時顯示的自訂工作區名稱
    TARGET_PROJECT_NAME=my_workspace
+
+   # 自訂圖片暫存目錄（選填，預設為系統暫存目錄）
+   # TEMP_IMAGE_DIR=/path/to/custom/temp/images
    ```
 
 ---

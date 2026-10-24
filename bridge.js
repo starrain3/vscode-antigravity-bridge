@@ -39,6 +39,52 @@ let activeInteractionSession = null; // 當前等待使用者確認的互動階�
 let activeTakeoverSession = null; // 當前等待授權的 Takeover 卡片階段
 let globalTakeoverSignature = ''; // 背景常駐監聽防重複推播籤章
 
+// --- 圖片暫存目錄與每小時自動清理機制 ---
+const TEMP_IMAGE_DIR = process.env.TEMP_IMAGE_DIR || path.join(os.tmpdir(), 'antigravity_bridge', 'tg_images');
+const IMAGE_TEMP_MAX_AGE_MS = 60 * 60 * 1000; // 超過 1 小時 (3600000ms) 則自動清除
+const IMAGE_CLEANUP_INTERVAL_MS = 60 * 60 * 1000; // 每 1 小時掃描一次
+
+/**
+ * 自動掃描並清理超過 1 小時的圖片暫存檔
+ */
+function cleanExpiredTempImages() {
+  try {
+    if (!fs.existsSync(TEMP_IMAGE_DIR)) return;
+
+    const files = fs.readdirSync(TEMP_IMAGE_DIR);
+    const now = Date.now();
+    let cleanedCount = 0;
+
+    for (const file of files) {
+      const filePath = path.join(TEMP_IMAGE_DIR, file);
+      try {
+        const stats = fs.statSync(filePath);
+        if (stats.isFile()) {
+          const ageMs = now - stats.mtimeMs;
+          if (ageMs > IMAGE_TEMP_MAX_AGE_MS) {
+            fs.unlinkSync(filePath);
+            cleanedCount++;
+            console.log(`[圖片暫存清理] 已自動清除過期圖檔: ${file} (已存在 ${(ageMs / 60000).toFixed(1)} 分鐘)`);
+          }
+        }
+      } catch (fileErr) {
+        // 忽略單一檔案存取異常
+      }
+    }
+
+    if (cleanedCount > 0) {
+      console.log(`[圖片暫存清理] 定時掃描完成，共清除 ${cleanedCount} 個過期暫存檔。`);
+    }
+  } catch (err) {
+    console.warn('[圖片暫存清理] 執行掃描時發生錯誤:', err.message);
+  }
+}
+
+// 服務啟動時先執行一次過期清理，並設置每 1 小時定時掃描
+cleanExpiredTempImages();
+const imageCleanupTimer = setInterval(cleanExpiredTempImages, IMAGE_CLEANUP_INTERVAL_MS);
+if (imageCleanupTimer.unref) imageCleanupTimer.unref();
+
 async function getBrowser() {
   const isAlive = browser && (
     typeof browser.isConnected === 'function' ? browser.isConnected() : browser.connected
@@ -1997,13 +2043,13 @@ async function handleUserPhotoRequest(ctx) {
   console.log('解析後的最終 Caption:', caption);
   console.log('------------------------------');
 
-  const tempDir = path.join(os.tmpdir(), 'antigravity_bridge', 'tg_images');
-  if (!fs.existsSync(tempDir)) {
-    fs.mkdirSync(tempDir, { recursive: true });
+  // 使用全域 TEMP_IMAGE_DIR 常數
+  if (!fs.existsSync(TEMP_IMAGE_DIR)) {
+    fs.mkdirSync(TEMP_IMAGE_DIR, { recursive: true });
   }
 
   const fileName = `img_${Date.now()}_${Math.random().toString(36).slice(2, 7)}.jpg`;
-  const localFilePath = path.join(tempDir, fileName);
+  const localFilePath = path.join(TEMP_IMAGE_DIR, fileName);
 
   try {
     const fileLink = await ctx.telegram.getFileLink(fileId);

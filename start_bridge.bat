@@ -96,3 +96,4 @@ if errorlevel 1 (
     echo [ERROR] Bridge 服務異常結束。請檢查上述日誌。
 )
 pause
+

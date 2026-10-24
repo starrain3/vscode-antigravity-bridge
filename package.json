@@ -1,0 +1,28 @@
+{
+  "name": "vscode-antigravity-bridge",
+  "version": "1.0.0",
+  "description": "Control your VS Code Antigravity AI Agent remotely via Telegram with CDP: live progress, one-click action approvals, dynamic scheduling, and skills management.",
+  "main": "bridge.js",
+  "scripts": {
+    "start": "node bridge.js"
+  },
+  "keywords": [
+    "antigravity",
+    "vscode",
+    "telegram-bot",
+    "cdp",
+    "chrome-devtools-protocol",
+    "ai-agent",
+    "chatops",
+    "automation"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^18.0.7",
+    "node-cron": "^4.6.0",
+    "node-telegram-bot-api": "^2.1.0",
+    "puppeteer-core": "^25.13.0",
+    "telegraf": "^4.16.3"
+  }
+}

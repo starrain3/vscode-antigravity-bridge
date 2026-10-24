@@ -1,0 +1,13 @@
+[
+  {
+    "id": "sample_daily_status",
+    "name": "每日早晨專案狀態與排程摘要",
+    "cron": "0 9 * * 1-5",
+    "prompt": "請檢查當前工作區最近的 Git 提交與尚未完成的 TODO，並產出精簡的進度摘要與今日建議任務清單。",
+    "newSession": true,
+    "enabled": false,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "lastRunAt": null,
+    "lastStatus": null
+  }
+]
